@@ -1,0 +1,2632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Suivi des Agents CEET/TDE Togo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --ceet-color: #1a5276;
+            --tde-color: #27ae60;
+            --ceet-light: #3498db;
+            --tde-light: #2ecc71;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            text-align: center;
+            margin: 50px auto;
+        }
+        
+        .login-logo {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 3px solid;
+        }
+        
+        .ceet-logo {
+            color: var(--ceet-color);
+            border-color: var(--ceet-color);
+        }
+        
+        .tde-logo {
+            color: var(--tde-color);
+            border-color: var(--tde-color);
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .login-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--dark-gray);
+            font-weight: 700;
+        }
+        
+        .login-subtitle {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--medium-gray);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--ceet-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ceet-color), var(--ceet-light));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .main-container {
+            width: 100%;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--ceet-color), var(--tde-color));
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--ceet-light), var(--tde-light));
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header-logo i {
+            font-size: 2.5rem;
+        }
+        
+        .ceet-header-logo {
+            color: var(--ceet-color);
+        }
+        
+        .tde-header-logo {
+            color: var(--tde-color);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-info i {
+            font-size: 1.2rem;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        
+        .admin-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--medium-gray);
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            color: var(--ceet-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .admin-tab {
+            padding: 12px 25px;
+            background: var(--light-gray);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-tab.active {
+            background: var(--ceet-color);
+            color: white;
+        }
+        
+        .admin-tab:hover {
+            transform: translateY(-2px);
+        }
+        
+        .region-section {
+            margin-bottom: 30px;
+        }
+        
+        .region-header {
+            background: linear-gradient(135deg, var(--ceet-color), var(--tde-color));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .region-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .agency-section {
+            background: var(--light-gray);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .agency-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--medium-gray);
+        }
+        
+        .agency-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ceet-color);
+        }
+        
+        .service-section {
+            margin-bottom: 20px;
+        }
+        
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .ceet-service {
+            border-left-color: var(--ceet-color);
+        }
+        
+        .tde-service {
+            border-left-color: var(--tde-color);
+        }
+        
+        .service-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .ceet-service .service-icon {
+            background: var(--ceet-color);
+        }
+        
+        .tde-service .service-icon {
+            background: var(--tde-color);
+        }
+        
+        .service-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .agents-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .agent-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .agent-card.ceet {
+            border-left-color: var(--ceet-color);
+        }
+        
+        .agent-card.tde {
+            border-left-color: var(--tde-color);
+        }
+        
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .agent-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ceet-color), var(--tde-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .agent-info {
+            flex: 1;
+        }
+        
+        .agent-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .agent-service {
+            font-size: 0.9rem;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .agent-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-bottom: 2px;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+        }
+        
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--medium-gray);
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .status-active {
+            background: var(--success);
+        }
+        
+        .status-inactive {
+            background: var(--danger);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .filters {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card.ceet {
+            border-top: 5px solid var(--ceet-color);
+        }
+        
+        .stat-card.tde {
+            border-top: 5px solid var(--tde-color);
+        }
+        
+        .stat-card.total {
+            border-top: 5px solid #6c757d;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card.ceet .stat-icon {
+            color: var(--ceet-color);
+        }
+        
+        .stat-card.tde .stat-icon {
+            color: var(--tde-color);
+        }
+        
+        .stat-card.total .stat-icon {
+            color: #6c757d;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        
+        .filter-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--ceet-color);
+            font-weight: 600;
+        }
+        
+        .filter-title i {
+            font-size: 1.2rem;
+        }
+        
+        .filter-item {
+            margin-bottom: 15px;
+        }
+        
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .form-header i {
+            font-size: 1.8rem;
+            color: var(--ceet-color);
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+            color: var(--ceet-color);
+            font-weight: 600;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .section-header i {
+            font-size: 1.3rem;
+            color: var(--ceet-color);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--ceet-color);
+            font-weight: 600;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-field {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--medium-gray);
+            border-radius: 10px;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--ceet-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 25px;
+            margin-top: 10px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .radio-option:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .radio-option input {
+            width: auto;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--tde-color), var(--tde-light));
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--ceet-color);
+            color: var(--ceet-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--ceet-color);
+            color: white;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+        
+        .map-container {
+            height: 300px;
+            background-color: var(--medium-gray);
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .location-info {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            border-left: 5px solid var(--ceet-color);
+        }
+        
+        .location-field {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .location-label {
+            font-weight: 600;
+            display: inline-block;
+            width: 150px;
+        }
+        
+        .consumption-history {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 5px solid var(--tde-color);
+        }
+        
+        .consumption-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--tde-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .consumption-field {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .consumption-inputs {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .consumption-input {
+            flex: 1;
+        }
+        
+        .consumption-result {
+            background: linear-gradient(135deg, #f0f4c3, #dce775);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-weight: 600;
+            border-left: 5px solid #cddc39;
+        }
+        
+        .report-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-top: 25px;
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .report-content {
+            line-height: 1.8;
+        }
+        
+        .report-field {
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .report-label {
+            font-weight: 600;
+            display: inline-block;
+            width: 200px;
+            color: #495057;
+        }
+        
+        .report-value {
+            flex: 1;
+            color: var(--dark-gray);
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            border-left: 5px solid var(--success);
+        }
+        
+        .gps-btn {
+            margin-top: 15px;
+            background: linear-gradient(135deg, #6c757d, #868e96);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .gps-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+        
+        .route-btn {
+            margin-top: 10px;
+            background: linear-gradient(135deg, var(--tde-color), var(--tde-light));
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .route-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .auto-gps-indicator {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--ceet-color);
+        }
+        
+        .auto-gps-indicator i {
+            color: var(--ceet-color);
+        }
+        
+        .auto-gps-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 4px solid var(--success);
+        }
+        
+        .auto-gps-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .consumption-unit {
+            margin-left: 5px;
+            font-weight: normal;
+            color: #6c757d;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 5px solid var(--warning);
+        }
+        
+        .activity-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--ceet-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .activity-summary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .activity-summary.tde {
+            border-left-color: var(--tde-color);
+        }
+        
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .activity-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .activity-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .ceet-activity .activity-icon {
+            background: linear-gradient(135deg, var(--ceet-color), var(--ceet-light));
+        }
+        
+        .tde-activity .activity-icon {
+            background: linear-gradient(135deg, var(--tde-color), var(--tde-light));
+        }
+        
+        .activity-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .activity-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .activity-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .activity-description {
+            margin: 15px 0;
+            line-height: 1.6;
+            color: #495057;
+        }
+        
+        .activity-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--medium-gray);
+        }
+        
+        .activity-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+        
+        .activity-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .activity-id {
+            font-weight: 600;
+            color: var(--ceet-color);
+            font-size: 0.9rem;
+        }
+        
+        .whatsapp-notification {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            border-left: 5px solid #25D366;
+        }
+        
+        .whatsapp-notification a {
+            color: white;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .agents-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row, .filter-group, .consumption-inputs {
+                flex-direction: column;
+            }
+            
+            .form-field, .filter-item {
+                width: 100%;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .activity-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-field {
+                flex-direction: column;
+            }
+            
+            .report-label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .user-info {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .agents-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-tabs {
+                flex-direction: column;
+            }
+            
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .activity-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .activity-footer {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            
+            .activity-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Écran de connexion -->
+    <div class="login-container" id="login-container">
+        <div class="login-logo">
+            <div class="logo ceet-logo">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <div class="logo tde-logo">
+                <i class="fas fa-tint"></i>
+            </div>
+        </div>
+        <h1 class="login-title">Connexion Agent</h1>
+        <p class="login-subtitle">Système de suivi CEET/TDE Togo</p>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="login-agence">Agence</label>
+                <select id="login-agence" required>
+                    <option value="">Sélectionnez votre agence</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="login-identifiant">Identifiant</label>
+                <input type="text" id="login-identifiant" placeholder="Votre identifiant" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="login-password">Mot de passe</label>
+                <input type="password" id="login-password" placeholder="Votre mot de passe" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+            
+            <div id="login-error" class="error-message">
+                Identifiant ou mot de passe incorrect
+            </div>
+        </form>
+    </div>
+
+    <!-- Application principale (cachée au départ) -->
+    <div class="container main-container hidden" id="main-container">
+        <header>
+            <div class="user-info">
+                <i class="fas fa-user"></i>
+                <span id="current-user">Agent</span>
+                <button class="logout-btn" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+            <div class="logo-container">
+                <div class="header-logo ceet-header-logo">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h1>Système de Suivi des Agents</h1>
+                <div class="header-logo tde-header-logo">
+                    <i class="fas fa-tint"></i>
+                </div>
+            </div>
+            <div class="subtitle">TDE-Togo & CEET-Togo - Suivi des Consommations et Interventions</div>
+        </header>
+        
+        <!-- Panel d'administration -->
+        <div class="admin-panel" id="admin-panel">
+            <div class="admin-header">
+                <div class="admin-title">
+                    <i class="fas fa-users-cog"></i>
+                    Gestion des Agents par Région et Service
+                </div>
+                <div class="admin-tabs">
+                    <button class="admin-tab active" data-tab="agents">Vue Agents</button>
+                    <button class="admin-tab" data-tab="stats">Statistiques</button>
+                </div>
+            </div>
+            
+            <div id="agents-view">
+                <!-- Les agents regroupés par région et service seront affichés ici -->
+            </div>
+            
+            <div id="stats-view" class="hidden">
+                <div class="stats-cards">
+                    <div class="stat-card ceet">
+                        <div class="stat-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="stat-value" id="admin-ceet-count">0</div>
+                        <div class="stat-label">Agents CEET Total</div>
+                    </div>
+                    <div class="stat-card tde">
+                        <div class="stat-icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="stat-value" id="admin-tde-count">0</div>
+                        <div class="stat-label">Agents TDE Total</div>
+                    </div>
+                    <div class="stat-card total">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value" id="admin-total-agents">0</div>
+                        <div class="stat-label">Agents Total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-cards">
+            <div class="stat-card ceet">
+                <div class="stat-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="stat-value" id="ceet-count">0</div>
+                <div class="stat-label">Activités CEET</div>
+            </div>
+            <div class="stat-card tde">
+                <div class="stat-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="stat-value" id="tde-count">0</div>
+                <div class="stat-label">Activités TDE</div>
+            </div>
+            <div class="stat-card total">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-value" id="total-activities">0</div>
+                <div class="stat-label">Activités Total</div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="filter-title">
+                        <i class="fas fa-filter"></i>
+                        Filtres d'activités
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label for="filter-type">Type d'activité</label>
+                        <select id="filter-type">
+                            <option value="all">Tous les types</option>
+                            <option value="CEET">CEET</option>
+                            <option value="TDE">TDE</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label for="filter-status">Statut</label>
+                        <select id="filter-status">
+                            <option value="all">Tous les statuts</option>
+                            <option value="active">En cours</option>
+                            <option value="completed">Terminé</option>
+                            <option value="pending">En attente</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label for="filter-date">Date</label>
+                        <input type="date" id="filter-date">
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label for="filter-region">Région</label>
+                        <select id="filter-region">
+                            <option value="all">Toutes les régions</option>
+                            <option value="Maritime">Région Maritime</option>
+                            <option value="Plateaux">Région des Plateaux</option>
+                            <option value="Centrale">Région Centrale</option>
+                            <option value="Kara">Région de la Kara</option>
+                            <option value="Savanes">Région des Savanes</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="apply-filters">
+                        <i class="fas fa-check"></i> Appliquer les filtres
+                    </button>
+                    
+                    <button class="btn btn-outline" id="reset-filters" style="margin-top: 10px;">
+                        <i class="fas fa-redo"></i> Réinitialiser
+                    </button>
+                </div>
+            </div>
+            
+            <div style="flex: 1;">
+                <!-- Formulaire de déclaration d'activité -->
+                <div class="form-container" id="activity-form">
+                    <div class="form-header">
+                        <i class="fas fa-clipboard-list"></i>
+                        <div class="form-title">Déclaration d'Activité</div>
+                    </div>
+                    
+                    <form id="declaration-form">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <i class="fas fa-info-circle"></i>
+                                <div class="section-title">Informations de base</div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="activity-type">Type d'activité *</label>
+                                    <select id="activity-type" required>
+                                        <option value="">Sélectionnez le type</option>
+                                        <option value="CEET">CEET - Électricité</option>
+                                        <option value="TDE">TDE - Eau</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-field">
+                                    <label for="activity-service">Service *</label>
+                                    <select id="activity-service" required>
+                                        <option value="">Sélectionnez le service</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="activity-date">Date de l'activité *</label>
+                                    <input type="date" id="activity-date" required>
+                                </div>
+                                
+                                <div class="form-field">
+                                    <label for="activity-time">Heure de début *</label>
+                                    <input type="time" id="activity-time" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="section-header">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="section-title">Localisation</div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="activity-region">Région *</label>
+                                    <select id="activity-region" required>
+                                        <option value="">Sélectionnez la région</option>
+                                        <option value="Maritime">Région Maritime</option>
+                                        <option value="Plateaux">Région des Plateaux</option>
+                                        <option value="Centrale">Région Centrale</option>
+                                        <option value="Kara">Région de la Kara</option>
+                                        <option value="Savanes">Région des Savanes</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-field">
+                                    <label for="activity-agency">Agence *</label>
+                                    <select id="activity-agency" required>
+                                        <option value="">Sélectionnez l'agence</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label for="activity-address">Adresse précise *</label>
+                                <input type="text" id="activity-address" placeholder="Adresse complète du lieu d'intervention" required>
+                            </div>
+                            
+                            <div class="location-info">
+                                <div class="location-field">
+                                    <span class="location-label">Coordonnées GPS:</span>
+                                    <span id="gps-coordinates">Non disponible</span>
+                                </div>
+                                <div class="location-field">
+                                    <span class="location-label">Précision:</span>
+                                    <span id="gps-accuracy">-</span>
+                                </div>
+                                
+                                <div class="auto-gps-indicator" id="gps-status">
+                                    <i class="fas fa-sync-alt fa-spin"></i>
+                                    <span>Géolocalisation en cours...</span>
+                                </div>
+                                
+                                <button type="button" class="gps-btn" id="refresh-gps">
+                                    <i class="fas fa-sync-alt"></i> Actualiser la position GPS
+                                </button>
+                            </div>
+                            
+                            <div class="map-container" id="location-map">
+                                <!-- Carte Leaflet sera initialisée ici -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="section-header">
+                                <i class="fas fa-tasks"></i>
+                                <div class="section-title">Détails de l'activité</div>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label for="activity-description">Description de l'activité *</label>
+                                <textarea id="activity-description" placeholder="Décrivez en détail l'activité réalisée..." required></textarea>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label>Type d'intervention</label>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="intervention-type" value="maintenance" checked>
+                                        <span>Maintenance</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="intervention-type" value="installation">
+                                        <span>Installation</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="intervention-type" value="reparation">
+                                        <span>Réparation</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="intervention-type" value="controle">
+                                        <span>Contrôle</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="client-name">Nom du client</label>
+                                    <input type="text" id="client-name" placeholder="Nom du client concerné">
+                                </div>
+                                
+                                <div class="form-field">
+                                    <label for="client-phone">Téléphone du client</label>
+                                    <input type="tel" id="client-phone" placeholder="Numéro de téléphone">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="section-header">
+                                <i class="fas fa-chart-bar"></i>
+                                <div class="section-title">Consommations et Mesures</div>
+                            </div>
+                            
+                            <div class="consumption-history">
+                                <div class="consumption-title">
+                                    <i class="fas fa-history"></i>
+                                    Historique des consommations
+                                </div>
+                                
+                                <div class="consumption-field">
+                                    <span>Consommation précédente:</span>
+                                    <span id="previous-consumption">--</span>
+                                </div>
+                                <div class="consumption-field">
+                                    <span>Date du dernier relevé:</span>
+                                    <span id="last-reading-date">--</span>
+                                </div>
+                                <div class="consumption-field">
+                                    <span>Tendance:</span>
+                                    <span id="consumption-trend">--</span>
+                                </div>
+                            </div>
+                            
+                            <div class="consumption-inputs">
+                                <div class="consumption-input">
+                                    <label for="current-reading">Relevé actuel *</label>
+                                    <input type="number" id="current-reading" placeholder="Valeur du compteur" step="0.01" required>
+                                </div>
+                                
+                                <div class="consumption-input">
+                                    <label for="consumption-unit">Unité</label>
+                                    <select id="consumption-unit">
+                                        <option value="kWh">kWh (CEET)</option>
+                                        <option value="m3">m³ (TDE)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="consumption-result" id="consumption-calculation">
+                                Calcul de consommation: --
+                            </div>
+                            
+                            <div class="highlight">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Important:</strong> Vérifiez l'exactitude des données avant soumission. Les informations seront transmises au système central.
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline" id="save-draft">
+                                <i class="fas fa-save"></i> Sauvegarder brouillon
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Soumettre l'activité
+                            </button>
+                        </div>
+                        
+                        <div id="submit-success" class="success-message">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Activité soumise avec succès! Un numéro de suivi a été généré.</span>
+                        </div>
+                        
+                        <div id="whatsapp-notification" class="whatsapp-notification">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>Notification envoyée à l'agence! </span>
+                            <a href="#" id="whatsapp-link" target="_blank">Cliquez ici pour ouvrir WhatsApp</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Historique des activités -->
+                <div class="report-container" id="activities-history">
+                    <div class="report-header">
+                        <div class="form-title">
+                            <i class="fas fa-history"></i>
+                            Historique des Activités
+                        </div>
+                        <div class="user-info">
+                            <span id="activities-count">0 activités</span>
+                        </div>
+                    </div>
+                    
+                    <div id="activities-list">
+                        <!-- Les activités seront affichées ici dynamiquement -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Base de données des agents avec identifiants et mots de passe
+        const agentsDatabase = {
+            "CEET_001": { 
+                id: "CEET_001", 
+                password: "ceet123", 
+                name: "Koffi Mensah", 
+                service: "CEET", 
+                region: "Maritime", 
+                agency: "Lomé Centre", 
+                status: "active" 
+            },
+            "CEET_002": { 
+                id: "CEET_002", 
+                password: "ceet456", 
+                name: "Komlan Dosseh", 
+                service: "CEET", 
+                region: "Plateaux", 
+                agency: "Atakpamé", 
+                status: "inactive" 
+            },
+            "CEET_003": { 
+                id: "CEET_003", 
+                password: "ceet789", 
+                name: "Tchaboure Tchalla", 
+                service: "CEET", 
+                region: "Centrale", 
+                agency: "Sokodé", 
+                status: "active" 
+            },
+            "CEET_004": { 
+                id: "CEET_004", 
+                password: "ceet101", 
+                name: "Sika Abra", 
+                service: "CEET", 
+                region: "Savanes", 
+                agency: "Dapaong", 
+                status: "active" 
+            },
+            
+            "TDE_001": { 
+                id: "TDE_001", 
+                password: "tde123", 
+                name: "Afi Gbeckor", 
+                service: "TDE", 
+                region: "Maritime", 
+                agency: "Lomé Bè", 
+                status: "active" 
+            },
+            "TDE_002": { 
+                id: "TDE_002", 
+                password: "tde456", 
+                name: "Yaovi Adjo", 
+                service: "TDE", 
+                region: "Plateaux", 
+                agency: "Kpalimé", 
+                status: "active" 
+            },
+            "TDE_003": { 
+                id: "TDE_003", 
+                password: "tde789", 
+                name: "Mawulolo Koudjo", 
+                service: "TDE", 
+                region: "Kara", 
+                agency: "Kara", 
+                status: "inactive" 
+            },
+            "TDE_004": { 
+                id: "TDE_004", 
+                password: "tde101", 
+                name: "Akossiwa Dogo", 
+                service: "TDE", 
+                region: "Maritime", 
+                agency: "Aného", 
+                status: "active" 
+            }
+        };
+
+        // Base de données des agences avec coordonnées GPS et numéros WhatsApp
+        const agenciesDatabase = {
+            "Lomé Centre": { 
+                phone: "+22870123456", 
+                gps: { lat: 6.1304, lng: 1.2158 },
+                region: "Maritime"
+            },
+            "Lomé Bè": { 
+                phone: "+22870123457", 
+                gps: { lat: 6.1400, lng: 1.2250 },
+                region: "Maritime"
+            },
+            "Aného": { 
+                phone: "+22870123458", 
+                gps: { lat: 6.2293, lng: 1.5919 },
+                region: "Maritime"
+            },
+            "Tsévié": { 
+                phone: "+22870123459", 
+                gps: { lat: 6.4261, lng: 1.2133 },
+                region: "Maritime"
+            },
+            "Atakpamé": { 
+                phone: "+22870123460", 
+                gps: { lat: 7.5250, lng: 1.1250 },
+                region: "Plateaux"
+            },
+            "Kpalimé": { 
+                phone: "+22870123461", 
+                gps: { lat: 6.9000, lng: 0.6300 },
+                region: "Plateaux"
+            },
+            "Badou": { 
+                phone: "+22870123462", 
+                gps: { lat: 7.5833, lng: 0.6000 },
+                region: "Plateaux"
+            },
+            "Sokodé": { 
+                phone: "+22870123463", 
+                gps: { lat: 8.9833, lng: 1.1333 },
+                region: "Centrale"
+            },
+            "Tchamba": { 
+                phone: "+22870123464", 
+                gps: { lat: 9.0333, lng: 1.4167 },
+                region: "Centrale"
+            },
+            "Kara": { 
+                phone: "+22892871605",  // Numéro spécifique pour Kara
+                gps: { lat: 9.5510, lng: 1.1861 },
+                region: "Kara"
+            },
+            "Bassar": { 
+                phone: "+22870123466", 
+                gps: { lat: 9.2500, lng: 0.7833 },
+                region: "Kara"
+            },
+            "Dapaong": { 
+                phone: "+22870123467", 
+                gps: { lat: 10.8667, lng: 0.2000 },
+                region: "Savanes"
+            },
+            "Mango": { 
+                phone: "+22870123468", 
+                gps: { lat: 10.3667, lng: 0.4667 },
+                region: "Savanes"
+            }
+        };
+
+        // Données simulées pour les agences
+        const agenciesData = {
+            "Maritime": ["Lomé Centre", "Lomé Bè", "Aného", "Tsévié", "Vogan"],
+            "Plateaux": ["Atakpamé", "Kpalimé", "Badou", "Notsè", "Amlamé"],
+            "Centrale": ["Sokodé", "Tchamba", "Sotouboua", "Bafilo"],
+            "Kara": ["Kara", "Bassar", "Niamtougou", "Pagouda"],
+            "Savanes": ["Dapaong", "Mango", "Cinkassé", "Tandjouaré"]
+        };
+
+        // Données simulées pour les services
+        const servicesData = {
+            "CEET": ["Réseau HT/MT", "Réseau BT", "Comptage", "Maintenance", "Clientèle"],
+            "TDE": ["Réseau AEP", "Traitement", "Pompage", "Distribution", "Qualité"]
+        };
+
+        // Données simulées pour les agents (pour l'affichage admin)
+        const agentsData = [
+            { id: 1, name: "Koffi Mensah", service: "CEET", region: "Maritime", agency: "Lomé Centre", status: "active" },
+            { id: 2, name: "Afi Gbeckor", service: "TDE", region: "Maritime", agency: "Lomé Bè", status: "active" },
+            { id: 3, name: "Komlan Dosseh", service: "CEET", region: "Plateaux", agency: "Atakpamé", status: "inactive" },
+            { id: 4, name: "Yaovi Adjo", service: "TDE", region: "Plateaux", agency: "Kpalimé", status: "active" },
+            { id: 5, name: "Tchaboure Tchalla", service: "CEET", region: "Centrale", agency: "Sokodé", status: "active" },
+            { id: 6, name: "Mawulolo Koudjo", service: "TDE", region: "Kara", agency: "Kara", status: "inactive" },
+            { id: 7, name: "Sika Abra", service: "CEET", region: "Savanes", agency: "Dapaong", status: "active" },
+            { id: 8, name: "Akossiwa Dogo", service: "TDE", region: "Maritime", agency: "Aného", status: "active" }
+        ];
+
+        // Données simulées pour les activités
+        let activitiesData = [
+            {
+                id: 1,
+                type: "CEET",
+                service: "Maintenance",
+                date: "2023-11-15",
+                time: "09:30",
+                region: "Maritime",
+                agency: "Lomé Centre",
+                address: "Rue des Cocotiers, Lomé",
+                description: "Maintenance du réseau électrique dans le quartier Hedzranawoé",
+                client: "M. Koffi Adjo",
+                consumption: 245.8,
+                unit: "kWh",
+                status: "completed",
+                gps: { lat: 6.1304, lng: 1.2158 },
+                agentId: "CEET_001"
+            },
+            {
+                id: 2,
+                type: "TDE",
+                service: "Contrôle qualité",
+                date: "2023-11-14",
+                time: "14:15",
+                region: "Plateaux",
+                agency: "Atakpamé",
+                address: "Quartier Oyoto, Atakpamé",
+                description: "Contrôle qualité de l'eau dans le réseau de distribution",
+                client: "Résidence Oyoto",
+                consumption: 18.5,
+                unit: "m³",
+                status: "completed",
+                gps: { lat: 7.525, lng: 1.125 },
+                agentId: "TDE_002"
+            }
+        ];
+
+        // Éléments DOM
+        const loginContainer = document.getElementById('login-container');
+        const mainContainer = document.getElementById('main-container');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        const currentUser = document.getElementById('current-user');
+        const activityTypeSelect = document.getElementById('activity-type');
+        const activityServiceSelect = document.getElementById('activity-service');
+        const activityRegionSelect = document.getElementById('activity-region');
+        const activityAgencySelect = document.getElementById('activity-agency');
+        const declarationForm = document.getElementById('declaration-form');
+        const gpsCoordinates = document.getElementById('gps-coordinates');
+        const gpsAccuracy = document.getElementById('gps-accuracy');
+        const gpsStatus = document.getElementById('gps-status');
+        const refreshGpsBtn = document.getElementById('refresh-gps');
+        const currentReading = document.getElementById('current-reading');
+        const consumptionUnit = document.getElementById('consumption-unit');
+        const consumptionCalculation = document.getElementById('consumption-calculation');
+        const submitSuccess = document.getElementById('submit-success');
+        const whatsappNotification = document.getElementById('whatsapp-notification');
+        const whatsappLink = document.getElementById('whatsapp-link');
+        const activitiesList = document.getElementById('activities-list');
+        const activitiesCount = document.getElementById('activities-count');
+        const ceetCount = document.getElementById('ceet-count');
+        const tdeCount = document.getElementById('tde-count');
+        const totalActivities = document.getElementById('total-activities');
+        const adminCeetCount = document.getElementById('admin-ceet-count');
+        const adminTdeCount = document.getElementById('admin-tde-count');
+        const adminTotalAgents = document.getElementById('admin-total-agents');
+        const agentsView = document.getElementById('agents-view');
+        const statsView = document.getElementById('stats-view');
+        const adminTabs = document.querySelectorAll('.admin-tab');
+        const applyFiltersBtn = document.getElementById('apply-filters');
+        const resetFiltersBtn = document.getElementById('reset-filters');
+        const saveDraftBtn = document.getElementById('save-draft');
+
+        // Variables globales
+        let map;
+        let userMarker;
+        let userLocation = null;
+        let watchId = null;
+        let currentAgent = null;
+
+        // Initialisation de l'application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLoginForm();
+            initializeActivityForm();
+            initializeGeolocation();
+            updateStats();
+            displayActivities();
+            displayAgentsByRegion();
+            updateAdminStats();
+            
+            // Gestionnaires d'événements pour les onglets admin
+            adminTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchAdminTab(tabName);
+                });
+            });
+            
+            // Gestionnaires pour les filtres
+            applyFiltersBtn.addEventListener('click', applyFilters);
+            resetFiltersBtn.addEventListener('click', resetFilters);
+            
+            // Gestionnaire pour sauvegarde brouillon
+            saveDraftBtn.addEventListener('click', saveDraft);
+            
+            // Définir la date d'aujourd'hui par défaut
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('activity-date').value = today;
+        });
+
+        // Initialisation du formulaire de connexion
+        function initializeLoginForm() {
+            const loginAgenceSelect = document.getElementById('login-agence');
+            
+            // Remplir les options d'agences
+            for (const region in agenciesData) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = `Région ${region}`;
+                
+                agenciesData[region].forEach(agency => {
+                    const option = document.createElement('option');
+                    option.value = agency;
+                    option.textContent = agency;
+                    optgroup.appendChild(option);
+                });
+                
+                loginAgenceSelect.appendChild(optgroup);
+            }
+            
+            // Gestionnaire de soumission du formulaire de connexion
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const agence = document.getElementById('login-agence').value;
+                const identifiant = document.getElementById('login-identifiant').value;
+                const password = document.getElementById('login-password').value;
+                
+                // Vérification des identifiants
+                if (authenticateUser(identifiant, password, agence)) {
+                    loginError.style.display = 'none';
+                    currentAgent = agentsDatabase[identifiant];
+                    
+                    currentUser.textContent = currentAgent.name;
+                    loginContainer.classList.add('hidden');
+                    mainContainer.classList.remove('hidden');
+                    
+                    // Mettre à jour les formulaires avec les informations de l'agent
+                    updateFormsWithAgentInfo();
+                } else {
+                    loginError.style.display = 'block';
+                }
+            });
+            
+            // Gestionnaire de déconnexion
+            logoutBtn.addEventListener('click', function() {
+                currentAgent = null;
+                mainContainer.classList.add('hidden');
+                loginContainer.classList.remove('hidden');
+                loginForm.reset();
+            });
+        }
+
+        // Fonction d'authentification
+        function authenticateUser(identifiant, password, agence) {
+            // Vérifier si l'identifiant existe dans la base de données
+            if (agentsDatabase[identifiant]) {
+                const agent = agentsDatabase[identifiant];
+                
+                // Vérifier le mot de passe et l'agence
+                if (agent.password === password && agent.agency === agence) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Initialisation du formulaire d'activité
+        function initializeActivityForm() {
+            // Remplir les services en fonction du type d'activité
+            activityTypeSelect.addEventListener('change', function() {
+                const type = this.value;
+                activityServiceSelect.innerHTML = '<option value="">Sélectionnez le service</option>';
+                
+                if (type && servicesData[type]) {
+                    servicesData[type].forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service;
+                        option.textContent = service;
+                        activityServiceSelect.appendChild(option);
+                    });
+                }
+                
+                // Mettre à jour l'unité de consommation
+                consumptionUnit.value = type === 'CEET' ? 'kWh' : 'm3';
+            });
+            
+            // Remplir les agences en fonction de la région
+            activityRegionSelect.addEventListener('change', function() {
+                const region = this.value;
+                activityAgencySelect.innerHTML = '<option value="">Sélectionnez l\'agence</option>';
+                
+                if (region && agenciesData[region]) {
+                    agenciesData[region].forEach(agency => {
+                        const option = document.createElement('option');
+                        option.value = agency;
+                        option.textContent = agency;
+                        activityAgencySelect.appendChild(option);
+                    });
+                }
+            });
+            
+            // Calcul de consommation en temps réel
+            currentReading.addEventListener('input', updateConsumptionCalculation);
+            consumptionUnit.addEventListener('change', updateConsumptionCalculation);
+            
+            // Gestionnaire de soumission du formulaire d'activité
+            declarationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Récupérer les données du formulaire
+                const activityData = {
+                    type: activityTypeSelect.value,
+                    service: activityServiceSelect.value,
+                    date: document.getElementById('activity-date').value,
+                    time: document.getElementById('activity-time').value,
+                    region: activityRegionSelect.value,
+                    agency: activityAgencySelect.value,
+                    address: document.getElementById('activity-address').value,
+                    description: document.getElementById('activity-description').value,
+                    interventionType: document.querySelector('input[name="intervention-type"]:checked').value,
+                    client: document.getElementById('client-name').value,
+                    clientPhone: document.getElementById('client-phone').value,
+                    consumption: parseFloat(currentReading.value) || 0,
+                    unit: consumptionUnit.value,
+                    gps: userLocation,
+                    agent: currentAgent.name,
+                    agentId: currentAgent.id
+                };
+                
+                // Envoyer la notification WhatsApp
+                sendWhatsAppNotification(activityData);
+                
+                // Simulation de soumission réussie
+                submitSuccess.style.display = 'block';
+                
+                // Ajouter la nouvelle activité aux données
+                const newActivity = {
+                    id: activitiesData.length + 1,
+                    ...activityData,
+                    status: 'completed'
+                };
+                
+                activitiesData.unshift(newActivity);
+                
+                // Mettre à jour l'affichage
+                updateStats();
+                displayActivities();
+                
+                // Réinitialiser le formulaire
+                setTimeout(() => {
+                    declarationForm.reset();
+                    submitSuccess.style.display = 'none';
+                    whatsappNotification.style.display = 'none';
+                    // Réinitialiser la date à aujourd'hui
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('activity-date').value = today;
+                    // Pré-remplir avec les infos de l'agent
+                    updateFormsWithAgentInfo();
+                }, 5000);
+            });
+        }
+
+        // Fonction pour envoyer la notification WhatsApp
+        function sendWhatsAppNotification(activityData) {
+            // Déterminer l'agence la plus proche
+            const nearestAgency = findNearestAgency(activityData.region, activityData.agency);
+            const agencyPhone = nearestAgency.phone;
+            const agencyName = nearestAgency.name;
+            
+            // Créer le message WhatsApp
+            const message = createWhatsAppMessage(activityData, agencyName);
+            
+            // Encoder le message pour URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Créer le lien WhatsApp
+            const whatsappUrl = `https://wa.me/${agencyPhone}?text=${encodedMessage}`;
+            
+            // Mettre à jour le lien et afficher la notification
+            whatsappLink.href = whatsappUrl;
+            whatsappNotification.style.display = 'block';
+            
+            // Ouvrir WhatsApp dans un nouvel onglet (optionnel)
+            window.open(whatsappUrl, '_blank');
+            
+            console.log(`Notification WhatsApp envoyée à ${agencyName} (${agencyPhone})`);
+        }
+
+        // Fonction pour trouver l'agence la plus proche
+        function findNearestAgency(region, selectedAgency) {
+            // Si l'agence sélectionnée existe dans la base de données, l'utiliser
+            if (agenciesDatabase[selectedAgency]) {
+                return {
+                    name: selectedAgency,
+                    phone: agenciesDatabase[selectedAgency].phone,
+                    gps: agenciesDatabase[selectedAgency].gps
+                };
+            }
+            
+            // Sinon, trouver l'agence la plus proche dans la région
+            const agenciesInRegion = Object.keys(agenciesDatabase).filter(agency => 
+                agenciesDatabase[agency].region === region
+            );
+            
+            if (agenciesInRegion.length > 0) {
+                const firstAgency = agenciesInRegion[0];
+                return {
+                    name: firstAgency,
+                    phone: agenciesDatabase[firstAgency].phone,
+                    gps: agenciesDatabase[firstAgency].gps
+                };
+            }
+            
+            // Par défaut, utiliser l'agence de Kara
+            return {
+                name: "Kara",
+                phone: "+22892871605",
+                gps: { lat: 9.5510, lng: 1.1861 }
+            };
+        }
+
+        // Fonction pour créer le message WhatsApp
+        function createWhatsAppMessage(activityData, agencyName) {
+            const interventionTypes = {
+                'maintenance': 'Maintenance',
+                'installation': 'Installation',
+                'reparation': 'Réparation',
+                'controle': 'Contrôle'
+            };
+            
+            return `🚨 NOUVELLE ACTIVITÉ DÉCLARÉE - ${activityData.type}
+
+👤 Agent: ${activityData.agent}
+🏢 Agence: ${activityData.agency}
+📍 Région: ${activityData.region}
+
+📅 Date: ${activityData.date} à ${activityData.time}
+🔧 Type d'intervention: ${interventionTypes[activityData.interventionType]}
+📋 Service: ${activityData.service}
+
+🏠 Adresse: ${activityData.address}
+${activityData.gps ? `📍 Coordonnées GPS: ${activityData.gps.lat.toFixed(6)}, ${activityData.gps.lng.toFixed(6)}` : ''}
+
+👥 Client: ${activityData.client || 'Non spécifié'}
+📞 Téléphone client: ${activityData.clientPhone || 'Non spécifié'}
+
+📝 Description:
+${activityData.description}
+
+⚡ Consommation: ${activityData.consumption} ${activityData.unit}
+
+🔔 Cette activité a été déclarée via le système de suivi CEET/TDE Togo.
+
+Pour plus d'informations, contactez l'agent ${activityData.agent}.`;
+        }
+
+        // Initialisation de la géolocalisation
+        function initializeGeolocation() {
+            refreshGpsBtn.addEventListener('click', getCurrentLocation);
+            getCurrentLocation();
+        }
+
+        // Obtenir la position actuelle
+        function getCurrentLocation() {
+            gpsStatus.className = 'auto-gps-indicator';
+            gpsStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i><span>Géolocalisation en cours...</span>';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    updateLocation,
+                    handleLocationError,
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                gpsStatus.className = 'auto-gps-indicator auto-gps-error';
+                gpsStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Géolocalisation non supportée</span>';
+            }
+        }
+
+        // Mettre à jour la position
+        function updateLocation(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            
+            userLocation = { lat, lng };
+            
+            gpsCoordinates.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            gpsAccuracy.textContent = `${Math.round(accuracy)} mètres`;
+            
+            gpsStatus.className = 'auto-gps-indicator auto-gps-success';
+            gpsStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Position actuelle détectée</span>';
+            
+            // Initialiser ou mettre à jour la carte
+            if (!map) {
+                initializeMap(lat, lng);
+            } else {
+                if (userMarker) {
+                    userMarker.setLatLng([lat, lng]);
+                }
+                map.setView([lat, lng], 16);
+            }
+        }
+
+        // Gérer les erreurs de géolocalisation
+        function handleLocationError(error) {
+            let message = '';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Accès à la localisation refusé';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Information de localisation indisponible';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Délai de localisation dépassé';
+                    break;
+                default:
+                    message = 'Erreur inconnue de géolocalisation';
+                    break;
+            }
+            
+            gpsStatus.className = 'auto-gps-indicator auto-gps-error';
+            gpsStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i><span>${message}</span>`;
+        }
+
+        // Initialiser la carte Leaflet
+        function initializeMap(lat, lng) {
+            map = L.map('location-map').setView([lat, lng], 16);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            userMarker = L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup('Votre position actuelle')
+                .openPopup();
+        }
+
+        // Mettre à jour les formulaires avec les informations de l'agent
+        function updateFormsWithAgentInfo() {
+            if (currentAgent) {
+                // Pré-remplir la région et l'agence dans le formulaire d'activité
+                const region = currentAgent.region;
+                if (region) {
+                    activityRegionSelect.value = region;
+                    
+                    // Déclencher l'événement change pour remplir les agences
+                    const event = new Event('change');
+                    activityRegionSelect.dispatchEvent(event);
+                    
+                    // Sélectionner l'agence de l'agent
+                    if (currentAgent.agency) {
+                        setTimeout(() => {
+                            activityAgencySelect.value = currentAgent.agency;
+                        }, 100);
+                    }
+                }
+                
+                // Pré-sélectionner le type d'activité selon le service de l'agent
+                activityTypeSelect.value = currentAgent.service;
+                
+                // Déclencher l'événement change pour remplir les services
+                const typeEvent = new Event('change');
+                activityTypeSelect.dispatchEvent(typeEvent);
+            }
+        }
+
+        // Mettre à jour le calcul de consommation
+        function updateConsumptionCalculation() {
+            const reading = parseFloat(currentReading.value);
+            
+            if (!isNaN(reading) && reading > 0) {
+                // Simulation de calcul (à adapter avec la logique métier réelle)
+                const previous = Math.max(0, reading - (Math.random() * 50 + 10));
+                const consumption = reading - previous;
+                const unit = consumptionUnit.value;
+                
+                consumptionCalculation.textContent = 
+                    `Calcul: ${consumption.toFixed(2)} ${unit} (Actuel: ${reading} - Précédent: ${previous.toFixed(2)})`;
+            } else {
+                consumptionCalculation.textContent = 'Calcul de consommation: --';
+            }
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            const ceetActivities = activitiesData.filter(a => a.type === 'CEET').length;
+            const tdeActivities = activitiesData.filter(a => a.type === 'TDE').length;
+            const total = activitiesData.length;
+            
+            ceetCount.textContent = ceetActivities;
+            tdeCount.textContent = tdeActivities;
+            totalActivities.textContent = total;
+            activitiesCount.textContent = `${total} activité${total > 1 ? 's' : ''}`;
+        }
+
+        // Afficher les activités
+        function displayActivities(filteredActivities = null) {
+            const activitiesToDisplay = filteredActivities || activitiesData;
+            activitiesList.innerHTML = '';
+            
+            if (activitiesToDisplay.length === 0) {
+                activitiesList.innerHTML = '<div class="highlight">Aucune activité trouvée avec les filtres sélectionnés.</div>';
+                return;
+            }
+            
+            activitiesToDisplay.forEach(activity => {
+                const activityElement = document.createElement('div');
+                activityElement.className = `activity-summary ${activity.type === 'CEET' ? 'ceet-activity' : 'tde-activity'}`;
+                
+                const statusClass = activity.status === 'completed' ? 'status-active' : 'status-inactive';
+                const statusText = activity.status === 'completed' ? 'Terminé' : 'En cours';
+                const agent = agentsDatabase[activity.agentId] || { name: 'Agent inconnu' };
+                
+                activityElement.innerHTML = `
+                    <div class="activity-header">
+                        <div class="activity-type">
+                            <div class="activity-icon">
+                                <i class="fas ${activity.type === 'CEET' ? 'fa-bolt' : 'fa-tint'}"></i>
+                            </div>
+                            <div>
+                                <div class="activity-title">${activity.service}</div>
+                                <div class="activity-date">${formatDate(activity.date)} - ${activity.time}</div>
+                            </div>
+                        </div>
+                        <div class="activity-status">
+                            <span class="status-indicator ${statusClass}"></span>
+                            <span>${statusText}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Région</div>
+                            <div class="detail-value">${activity.region}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Agence</div>
+                            <div class="detail-value">${activity.agency}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Agent</div>
+                            <div class="detail-value">${agent.name}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Consommation</div>
+                            <div class="detail-value">${activity.consumption} ${activity.unit}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-description">
+                        ${activity.description}
+                    </div>
+                    
+                    <div class="activity-footer">
+                        <div class="activity-id">REF: ${activity.type}-${getAgencyCode(activity.agency)}-${activity.date.replace(/-/g, '')}-${activity.id.toString().padStart(3, '0')}</div>
+                        <div class="activity-actions">
+                            <button class="btn btn-outline btn-sm view-details" data-id="${activity.id}">
+                                <i class="fas fa-eye"></i> Détails
+                            </button>
+                            <button class="btn btn-outline btn-sm view-route" data-id="${activity.id}">
+                                <i class="fas fa-route"></i> Itinéraire
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                activitiesList.appendChild(activityElement);
+            });
+            
+            // Ajouter les gestionnaires d'événements pour les boutons
+            document.querySelectorAll('.view-details').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const activityId = parseInt(this.getAttribute('data-id'));
+                    viewActivityDetails(activityId);
+                });
+            });
+            
+            document.querySelectorAll('.view-route').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const activityId = parseInt(this.getAttribute('data-id'));
+                    viewActivityRoute(activityId);
+                });
+            });
+        }
+
+        // Afficher les agents par région
+        function displayAgentsByRegion() {
+            agentsView.innerHTML = '';
+            
+            // Regrouper les agents par région
+            const agentsByRegion = {};
+            agentsData.forEach(agent => {
+                if (!agentsByRegion[agent.region]) {
+                    agentsByRegion[agent.region] = [];
+                }
+                agentsByRegion[agent.region].push(agent);
+            });
+            
+            // Créer les sections par région
+            for (const region in agentsByRegion) {
+                const regionSection = document.createElement('div');
+                regionSection.className = 'region-section';
+                
+                let regionHTML = `
+                    <div class="region-header">
+                        <div class="region-title">Région ${region}</div>
+                        <div class="region-count">${agentsByRegion[region].length} agent(s)</div>
+                    </div>
+                `;
+                
+                // Regrouper les agents par agence dans cette région
+                const agentsByAgency = {};
+                agentsByRegion[region].forEach(agent => {
+                    if (!agentsByAgency[agent.agency]) {
+                        agentsByAgency[agent.agency] = [];
+                    }
+                    agentsByAgency[agent.agency].push(agent);
+                });
+                
+                // Créer les sections par agence
+                for (const agency in agentsByAgency) {
+                    regionHTML += `
+                        <div class="agency-section">
+                            <div class="agency-header">
+                                <div class="agency-title">Agence ${agency}</div>
+                                <div class="agency-count">${agentsByAgency[agency].length} agent(s)</div>
+                            </div>
+                    `;
+                    
+                    // Regrouper les agents par service dans cette agence
+                    const agentsByService = {};
+                    agentsByAgency[agency].forEach(agent => {
+                        if (!agentsByService[agent.service]) {
+                            agentsByService[agent.service] = [];
+                        }
+                        agentsByService[agent.service].push(agent);
+                    });
+                    
+                    // Créer les sections par service
+                    for (const service in agentsByService) {
+                        const serviceClass = service === 'CEET' ? 'ceet-service' : 'tde-service';
+                        const serviceIcon = service === 'CEET' ? 'fa-bolt' : 'fa-tint';
+                        
+                        regionHTML += `
+                            <div class="service-section">
+                                <div class="service-header ${serviceClass}">
+                                    <div class="service-icon">
+                                        <i class="fas ${serviceIcon}"></i>
+                                    </div>
+                                    <div class="service-title">Service ${service}</div>
+                                </div>
+                                <div class="agents-list">
+                        `;
+                        
+                        // Afficher les agents de ce service
+                        agentsByService[service].forEach(agent => {
+                            const statusClass = agent.status === 'active' ? 'status-active' : 'status-inactive';
+                            const statusText = agent.status === 'active' ? 'En service' : 'Hors service';
+                            
+                            regionHTML += `
+                                <div class="agent-card ${service.toLowerCase()}">
+                                    <div class="agent-header">
+                                        <div class="agent-avatar">${getInitials(agent.name)}</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">${agent.name}</div>
+                                            <div class="agent-service">
+                                                <i class="fas ${serviceIcon}"></i>
+                                                ${service} - ${agent.agency}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="agent-details">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Région</div>
+                                            <div class="detail-value">${agent.region}</div>
+                                        </div>
+                                        <div class="detail-item">
+                                            <div class="detail-label">Agence</div>
+                                            <div class="detail-value">${agent.agency}</div>
+                                        </div>
+                                    </div>
+                                    <div class="agent-status">
+                                        <span class="status-indicator ${statusClass}"></span>
+                                        <span>${statusText}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        regionHTML += `
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    regionHTML += `</div>`;
+                }
+                
+                regionSection.innerHTML = regionHTML;
+                agentsView.appendChild(regionSection);
+            }
+        }
+
+        // Mettre à jour les statistiques admin
+        function updateAdminStats() {
+            const ceetAgents = agentsData.filter(a => a.service === 'CEET').length;
+            const tdeAgents = agentsData.filter(a => a.service === 'TDE').length;
+            const total = agentsData.length;
+            
+            adminCeetCount.textContent = ceetAgents;
+            adminTdeCount.textContent = tdeAgents;
+            adminTotalAgents.textContent = total;
+        }
+
+        // Changer d'onglet admin
+        function switchAdminTab(tabName) {
+            // Mettre à jour les onglets actifs
+            adminTabs.forEach(tab => {
+                if (tab.getAttribute('data-tab') === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Afficher la vue correspondante
+            if (tabName === 'agents') {
+                document.getElementById('agents-view').classList.remove('hidden');
+                document.getElementById('stats-view').classList.add('hidden');
+            } else if (tabName === 'stats') {
+                document.getElementById('agents-view').classList.add('hidden');
+                document.getElementById('stats-view').classList.remove('hidden');
+            }
+        }
+
+        // Appliquer les filtres
+        function applyFilters() {
+            const typeFilter = document.getElementById('filter-type').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            const dateFilter = document.getElementById('filter-date').value;
+            const regionFilter = document.getElementById('filter-region').value;
+            
+            let filteredActivities = activitiesData;
+            
+            if (typeFilter !== 'all') {
+                filteredActivities = filteredActivities.filter(a => a.type === typeFilter);
+            }
+            
+            if (statusFilter !== 'all') {
+                filteredActivities = filteredActivities.filter(a => a.status === statusFilter);
+            }
+            
+            if (dateFilter) {
+                filteredActivities = filteredActivities.filter(a => a.date === dateFilter);
+            }
+            
+            if (regionFilter !== 'all') {
+                filteredActivities = filteredActivities.filter(a => a.region === regionFilter);
+            }
+            
+            displayActivities(filteredActivities);
+        }
+
+        // Réinitialiser les filtres
+        function resetFilters() {
+            document.getElementById('filter-type').value = 'all';
+            document.getElementById('filter-status').value = 'all';
+            document.getElementById('filter-date').value = '';
+            document.getElementById('filter-region').value = 'all';
+            
+            displayActivities();
+        }
+
+        // Sauvegarder brouillon
+        function saveDraft() {
+            alert('Brouillon sauvegardé avec succès!');
+            // Ici on pourrait sauvegarder dans le localStorage
+        }
+
+        // Fonctions utilitaires
+        function getRegionFromAgency(agency) {
+            for (const region in agenciesData) {
+                if (agenciesData[region].includes(agency)) {
+                    return region;
+                }
+            }
+            return '';
+        }
+
+        function formatDate(dateString) {
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', options);
+        }
+
+        function getAgencyCode(agency) {
+            // Générer un code d'agence basé sur le nom
+            const words = agency.split(' ');
+            if (words.length > 1) {
+                return words.map(word => word[0]).join('').toUpperCase();
+            }
+            return agency.substring(0, 2).toUpperCase();
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(part => part[0]).join('').toUpperCase();
+        }
+
+        function viewActivityDetails(activityId) {
+            const activity = activitiesData.find(a => a.id === activityId);
+            if (activity) {
+                const agent = agentsDatabase[activity.agentId] || { name: 'Agent inconnu' };
+                alert(`Détails de l'activité:\n\nType: ${activity.type}\nService: ${activity.service}\nDate: ${activity.date}\nAgent: ${agent.name}\nClient: ${activity.client}\nDescription: ${activity.description}`);
+            }
+        }
+
+        function viewActivityRoute(activityId) {
+            const activity = activitiesData.find(a => a.id === activityId);
+            if (activity && userLocation) {
+                alert(`Itinéraire vers l'activité:\n\nDestination: ${activity.address}\nCoordonnées: ${activity.gps ? `${activity.gps.lat}, ${activity.gps.lng}` : 'Non disponible'}`);
+                
+                // En production, on pourrait ouvrir une application de navigation
+                if (activity.gps) {
+                    const url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${activity.gps.lat},${activity.gps.lng}`;
+                    window.open(url, '_blank');
+                }
+            } else {
+                alert('Impossible de calculer l\'itinéraire. Vérifiez que la géolocalisation est activée.');
+            }
+        }
+
+        // Fonction pour afficher les identifiants de test (pour faciliter les tests)
+        function showTestCredentials() {
+            console.log("=== IDENTIFIANTS DE TEST ===");
+            console.log("AGENTS CEET:");
+            console.log("CEET_001 / ceet123 - Koffi Mensah - Lomé Centre");
+            console.log("CEET_002 / ceet456 - Komlan Dosseh - Atakpamé");
+            console.log("CEET_003 / ceet789 - Tchaboure Tchalla - Sokodé");
+            console.log("CEET_004 / ceet101 - Sika Abra - Dapaong");
+            console.log("\nAGENTS TDE:");
+            console.log("TDE_001 / tde123 - Afi Gbeckor - Lomé Bè");
+            console.log("TDE_002 / tde456 - Yaovi Adjo - Kpalimé");
+            console.log("TDE_003 / tde789 - Mawulolo Koudjo - Kara");
+            console.log("TDE_004 / tde101 - Akossiwa Dogo - Aného");
+            console.log("\n=== NUMÉROS WHATSAPP PAR AGENCE ===");
+            console.log("Kara: +22892871605");
+            console.log("Autres agences: numéros de test");
+        }
+
+        // Afficher les identifiants dans la console au chargement
+        showTestCredentials();
+    </script>
+</body>
+</html>
