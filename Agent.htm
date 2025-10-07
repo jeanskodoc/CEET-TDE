@@ -1069,6 +1069,34 @@
             font-weight: 600;
         }
         
+        .simulated-gps {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 5px solid var(--ceet-color);
+        }
+        
+        .simulated-gps-btn {
+            background: linear-gradient(135deg, var(--tde-color), var(--tde-light));
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .simulated-gps-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+        
         @media (max-width: 1200px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -1437,6 +1465,20 @@
                                 </button>
                             </div>
                             
+                            <!-- Section GPS simulé pour les tests -->
+                            <div class="simulated-gps">
+                                <div class="location-field">
+                                    <span class="location-label">GPS Simulé (Test):</span>
+                                    <span id="simulated-gps-coordinates">Non généré</span>
+                                </div>
+                                <button type="button" class="simulated-gps-btn" id="generate-gps">
+                                    <i class="fas fa-map-marker-alt"></i> Générer des coordonnées GPS simulées
+                                </button>
+                                <button type="button" class="simulated-gps-btn" id="use-agency-gps">
+                                    <i class="fas fa-building"></i> Utiliser coordonnées de l'agence
+                                </button>
+                            </div>
+                            
                             <div class="map-container" id="location-map">
                                 <!-- Carte Leaflet sera initialisée ici -->
                             </div>
@@ -1708,7 +1750,7 @@
                 region: "Centrale"
             },
             "Kara": { 
-                phone: "+22892871605",  // Numéro spécifique pour Kara
+                phone: "+22892871605",
                 gps: { lat: 9.5510, lng: 1.1861 },
                 region: "Kara"
             },
@@ -1810,6 +1852,9 @@
         const gpsAccuracy = document.getElementById('gps-accuracy');
         const gpsStatus = document.getElementById('gps-status');
         const refreshGpsBtn = document.getElementById('refresh-gps');
+        const generateGpsBtn = document.getElementById('generate-gps');
+        const useAgencyGpsBtn = document.getElementById('use-agency-gps');
+        const simulatedGpsCoordinates = document.getElementById('simulated-gps-coordinates');
         const currentReading = document.getElementById('current-reading');
         const consumptionUnit = document.getElementById('consumption-unit');
         const consumptionCalculation = document.getElementById('consumption-calculation');
@@ -1835,6 +1880,7 @@
         let map;
         let userMarker;
         let userLocation = null;
+        let simulatedLocation = null;
         let watchId = null;
         let currentAgent = null;
 
@@ -1862,6 +1908,10 @@
             
             // Gestionnaire pour sauvegarde brouillon
             saveDraftBtn.addEventListener('click', saveDraft);
+            
+            // Gestionnaires pour GPS simulé
+            generateGpsBtn.addEventListener('click', generateSimulatedGPS);
+            useAgencyGpsBtn.addEventListener('click', useAgencyGPS);
             
             // Définir la date d'aujourd'hui par défaut
             const today = new Date().toISOString().split('T')[0];
@@ -1977,6 +2027,14 @@
             declarationForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
+                // Utiliser la position simulée si disponible, sinon la position réelle
+                const finalLocation = simulatedLocation || userLocation;
+                
+                if (!finalLocation) {
+                    alert('Veuillez générer ou obtenir des coordonnées GPS avant de soumettre.');
+                    return;
+                }
+                
                 // Récupérer les données du formulaire
                 const activityData = {
                     type: activityTypeSelect.value,
@@ -1992,7 +2050,7 @@
                     clientPhone: document.getElementById('client-phone').value,
                     consumption: parseFloat(currentReading.value) || 0,
                     unit: consumptionUnit.value,
-                    gps: userLocation,
+                    gps: finalLocation,
                     agent: currentAgent.name,
                     agentId: currentAgent.id
                 };
@@ -2026,8 +2084,95 @@
                     document.getElementById('activity-date').value = today;
                     // Pré-remplir avec les infos de l'agent
                     updateFormsWithAgentInfo();
+                    // Réinitialiser les positions GPS
+                    simulatedLocation = null;
+                    simulatedGpsCoordinates.textContent = 'Non généré';
                 }, 5000);
             });
+        }
+
+        // Fonction pour générer des coordonnées GPS simulées
+        function generateSimulatedGPS() {
+            const region = activityRegionSelect.value;
+            const agency = activityAgencySelect.value;
+            
+            if (!region || !agency) {
+                alert('Veuillez d\'abord sélectionner une région et une agence.');
+                return;
+            }
+            
+            // Générer des coordonnées aléatoires dans la région sélectionnée
+            let lat, lng;
+            
+            // Coordonnées approximatives par région
+            const regionBounds = {
+                "Maritime": { minLat: 6.0, maxLat: 6.5, minLng: 1.0, maxLng: 1.6 },
+                "Plateaux": { minLat: 6.5, maxLat: 8.0, minLng: 0.5, maxLng: 1.5 },
+                "Centrale": { minLat: 8.0, maxLat: 9.5, minLng: 0.8, maxLng: 1.4 },
+                "Kara": { minLat: 9.0, maxLat: 10.0, minLng: 0.5, maxLng: 1.3 },
+                "Savanes": { minLat: 9.5, maxLat: 11.0, minLng: 0.1, maxLng: 1.0 }
+            };
+            
+            const bounds = regionBounds[region] || regionBounds["Maritime"];
+            
+            // Générer des coordonnées aléatoires dans les limites de la région
+            lat = bounds.minLat + Math.random() * (bounds.maxLat - bounds.minLat);
+            lng = bounds.minLng + Math.random() * (bounds.maxLng - bounds.minLng);
+            
+            simulatedLocation = { lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) };
+            
+            // Mettre à jour l'affichage
+            simulatedGpsCoordinates.textContent = `${simulatedLocation.lat}, ${simulatedLocation.lng}`;
+            
+            // Mettre à jour la carte
+            updateMapWithLocation(simulatedLocation.lat, simulatedLocation.lng);
+            
+            alert(`Coordonnées GPS simulées générées pour la région ${region}: ${simulatedLocation.lat}, ${simulatedLocation.lng}`);
+        }
+
+        // Fonction pour utiliser les coordonnées de l'agence
+        function useAgencyGPS() {
+            const agency = activityAgencySelect.value;
+            
+            if (!agency) {
+                alert('Veuillez d\'abord sélectionner une agence.');
+                return;
+            }
+            
+            if (agenciesDatabase[agency] && agenciesDatabase[agency].gps) {
+                const agencyGPS = agenciesDatabase[agency].gps;
+                simulatedLocation = { 
+                    lat: parseFloat(agencyGPS.lat.toFixed(6)), 
+                    lng: parseFloat(agencyGPS.lng.toFixed(6)) 
+                };
+                
+                // Mettre à jour l'affichage
+                simulatedGpsCoordinates.textContent = `${simulatedLocation.lat}, ${simulatedLocation.lng}`;
+                
+                // Mettre à jour la carte
+                updateMapWithLocation(simulatedLocation.lat, simulatedLocation.lng);
+                
+                alert(`Coordonnées GPS de l'agence ${agency} utilisées: ${simulatedLocation.lat}, ${simulatedLocation.lng}`);
+            } else {
+                alert('Aucune coordonnée GPS disponible pour cette agence.');
+            }
+        }
+
+        // Fonction pour mettre à jour la carte avec une position
+        function updateMapWithLocation(lat, lng) {
+            if (!map) {
+                initializeMap(lat, lng);
+            } else {
+                if (userMarker) {
+                    userMarker.setLatLng([lat, lng]);
+                } else {
+                    userMarker = L.marker([lat, lng])
+                        .addTo(map)
+                        .bindPopup('Position actuelle')
+                        .openPopup();
+                }
+                map.setView([lat, lng], 16);
+            }
         }
 
         // Fonction pour envoyer la notification WhatsApp
@@ -2109,7 +2254,7 @@
 📋 Service: ${activityData.service}
 
 🏠 Adresse: ${activityData.address}
-${activityData.gps ? `📍 Coordonnées GPS: ${activityData.gps.lat.toFixed(6)}, ${activityData.gps.lng.toFixed(6)}` : ''}
+📍 Coordonnées GPS: ${activityData.gps.lat}, ${activityData.gps.lng}
 
 👥 Client: ${activityData.client || 'Non spécifié'}
 📞 Téléphone client: ${activityData.clientPhone || 'Non spécifié'}
@@ -2165,15 +2310,8 @@ Pour plus d'informations, contactez l'agent ${activityData.agent}.`;
             gpsStatus.className = 'auto-gps-indicator auto-gps-success';
             gpsStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Position actuelle détectée</span>';
             
-            // Initialiser ou mettre à jour la carte
-            if (!map) {
-                initializeMap(lat, lng);
-            } else {
-                if (userMarker) {
-                    userMarker.setLatLng([lat, lng]);
-                }
-                map.setView([lat, lng], 16);
-            }
+            // Mettre à jour la carte
+            updateMapWithLocation(lat, lng);
         }
 
         // Gérer les erreurs de géolocalisation
