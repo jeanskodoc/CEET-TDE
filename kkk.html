@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Suivi des Agents CEET/TDE Togo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --ceet-color: #1a5276;
+            --tde-color: #27ae60;
+            --ceet-light: #3498db;
+            --tde-light: #2ecc71;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--ceet-color), var(--tde-color));
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--ceet-light), var(--tde-light));
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header-logo i {
+            font-size: 2.5rem;
+        }
+        
+        .ceet-header-logo {
+            color: var(--ceet-color);
+        }
+        
+        .tde-header-logo {
+            color: var(--tde-color);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .welcome-section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .welcome-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--ceet-color);
+        }
+        
+        .welcome-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #495057;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .services-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .service-header {
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .ceet-service .service-icon {
+            background: linear-gradient(135deg, var(--ceet-color), var(--ceet-light));
+        }
+        
+        .tde-service .service-icon {
+            background: linear-gradient(135deg, var(--tde-color), var(--tde-light));
+        }
+        
+        .service-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .service-description {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        
+        .service-body {
+            padding: 25px;
+        }
+        
+        .service-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+        
+        .service-features li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .service-features i {
+            color: var(--success);
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+            text-decoration: none;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ceet-color), var(--ceet-light));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--tde-color), var(--tde-light));
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .stats-section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin: 40px 0;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--ceet-color);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: var(--light-gray);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card.ceet {
+            border-top: 5px solid var(--ceet-color);
+        }
+        
+        .stat-card.tde {
+            border-top: 5px solid var(--tde-color);
+        }
+        
+        .stat-card.total {
+            border-top: 5px solid #6c757d;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card.ceet .stat-icon {
+            color: var(--ceet-color);
+        }
+        
+        .stat-card.tde .stat-icon {
+            color: var(--tde-color);
+        }
+        
+        .stat-card.total .stat-icon {
+            color: #6c757d;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .access-section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .access-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: var(--ceet-color);
+        }
+        
+        .access-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .access-card {
+            background: var(--light-gray);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .access-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .access-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .agent-access .access-icon {
+            background: linear-gradient(135deg, var(--ceet-color), var(--ceet-light));
+        }
+        
+        .agency-access .access-icon {
+            background: linear-gradient(135deg, var(--tde-color), var(--tde-light));
+        }
+        
+        .access-card-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .access-card-description {
+            color: #6c757d;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        footer {
+            background: linear-gradient(135deg, var(--ceet-color), var(--tde-color));
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .footer-logo {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .footer-logo-item {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .footer-logo-item i {
+            font-size: 1.5rem;
+        }
+        
+        .ceet-footer-logo {
+            color: var(--ceet-color);
+        }
+        
+        .tde-footer-logo {
+            color: var(--tde-color);
+        }
+        
+        .footer-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .welcome-section {
+                padding: 30px 20px;
+            }
+            
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+            
+            .services-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .access-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-logo {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .header-logo i {
+                font-size: 1.8rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <div class="header-logo ceet-header-logo">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h1>Système de Suivi CEET/TDE Togo</h1>
+            <div class="header-logo tde-header-logo">
+                <i class="fas fa-tint"></i>
+            </div>
+        </div>
+        <div class="subtitle">Plateforme de Gestion des Interventions et du Suivi des Agents</div>
+    </header>
+
+    <div class="container">
+        <section class="welcome-section">
+            <h2 class="welcome-title">Bienvenue sur la Plateforme de Suivi</h2>
+            <p class="welcome-text">
+                Le Système de Suivi des Agents CEET/TDE Togo est une plateforme innovante conçue pour optimiser 
+                la gestion des interventions techniques, le suivi des consommations et la coordination des équipes 
+                sur le terrain. Cette solution digitale permet d'améliorer l'efficacité opérationnelle et la qualité 
+                de service auprès des clients.
+            </p>
+        </section>
+
+        <section class="services-container">
+            <div class="service-card ceet-service">
+                <div class="service-header">
+                    <div class="service-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="service-title">CEET - Service Électricité</h3>
+                    <p class="service-description">
+                        Gestion des interventions électriques et suivi des consommations
+                    </p>
+                </div>
+                <div class="service-body">
+                    <ul class="service-features">
+                        <li><i class="fas fa-check-circle"></i> Déclaration d'interventions</li>
+                        <li><i class="fas fa-check-circle"></i> Relevé de compteurs électriques</li>
+                        <li><i class="fas fa-check-circle"></i> Suivi des pannes et réparations</li>
+                        <li><i class="fas fa-check-circle"></i> Géolocalisation des interventions</li>
+                        <li><i class="fas fa-check-circle"></i> Rapports d'activité automatiques</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card tde-service">
+                <div class="service-header">
+                    <div class="service-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h3 class="service-title">TDE - Service Eau</h3>
+                    <p class="service-description">
+                        Gestion des interventions hydrauliques et contrôle de qualité
+                    </p>
+                </div>
+                <div class="service-body">
+                    <ul class="service-features">
+                        <li><i class="fas fa-check-circle"></i> Déclaration d'interventions</li>
+                        <li><i class="fas fa-check-circle"></i> Relevé de compteurs d'eau</li>
+                        <li><i class="fas fa-check-circle"></i> Contrôle qualité de l'eau</li>
+                        <li><i class="fas fa-check-circle"></i> Suivi des réseaux d'adduction</li>
+                        <li><i class="fas fa-check-circle"></i> Alertes de maintenance préventive</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-section">
+            <h2 class="section-title">Statistiques du Système</h2>
+            <div class="stats-container">
+                <div class="stat-card ceet">
+                    <div class="stat-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="stat-value" id="ceet-stats">0</div>
+                    <div class="stat-label">Interventions CEET</div>
+                </div>
+                <div class="stat-card tde">
+                    <div class="stat-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="stat-value" id="tde-stats">0</div>
+                    <div class="stat-label">Interventions TDE</div>
+                </div>
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="agents-stats">0</div>
+                    <div class="stat-label">Agents Actifs</div>
+                </div>
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="stat-value" id="regions-stats">5</div>
+                    <div class="stat-label">Régions Couvertes</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="access-section">
+            <h2 class="access-title">Accès aux Plateformes</h2>
+            <div class="access-buttons">
+                <div class="access-card agent-access">
+                    <div class="access-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="access-card-title">Espace Agent</h3>
+                    <p class="access-card-description">
+                        Accédez à la plateforme de déclaration d'activités, de suivi des interventions 
+                        et de gestion des consommations pour les agents de terrain.
+                    </p>
+                    <a href="Agent.html" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Accéder à l'Espace Agent
+                    </a>
+                </div>
+
+                <div class="access-card agency-access">
+                    <div class="access-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="access-card-title">Espace Agence</h3>
+                    <p class="access-card-description">
+                        Accédez à la plateforme de gestion des interventions, de suivi des agents 
+                        et de consultation des statistiques pour les responsables d'agence.
+                    </p>
+                    <a href="agence.html" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> Accéder à l'Espace Agence
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="footer-logo-item ceet-footer-logo">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="footer-logo-item tde-footer-logo">
+                    <i class="fas fa-tint"></i>
+                </div>
+            </div>
+            <p class="footer-text">
+                Système de Suivi des Agents CEET/TDE Togo &copy; 2023 - Tous droits réservés
+            </p>
+            <p class="footer-text">
+                Développé pour améliorer l'efficacité opérationnelle des services publics
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Simulation de données statistiques
+        document.addEventListener('DOMContentLoaded', function() {
+            // Générer des valeurs aléatoires pour les statistiques
+            const ceetStats = Math.floor(Math.random() * 500) + 100;
+            const tdeStats = Math.floor(Math.random() * 400) + 80;
+            const agentsStats = Math.floor(Math.random() * 50) + 20;
+            
+            // Mettre à jour les éléments avec les valeurs
+            document.getElementById('ceet-stats').textContent = ceetStats;
+            document.getElementById('tde-stats').textContent = tdeStats;
+            document.getElementById('agents-stats').textContent = agentsStats;
+            
+            // Animation des statistiques
+            animateValue('ceet-stats', 0, ceetStats, 1500);
+            animateValue('tde-stats', 0, tdeStats, 1500);
+            animateValue('agents-stats', 0, agentsStats, 1500);
+        });
+        
+        // Fonction pour animer les valeurs numériques
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                obj.textContent = value;
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+    </script>
+</body>
+</html>
